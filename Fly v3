@@ -1,0 +1,72 @@
+-- fly v3 | سكربت طيران للجوال (Delta) - عربي
+
+local اللاعب = game.Players.LocalPlayer
+local الشخصية = اللاعب.Character or اللاعب.CharacterAdded:Wait()
+local الجذر = الشخصية:WaitForChild("HumanoidRootPart")
+local الإنسان = الشخصية:WaitForChild("Humanoid")
+
+local تشغيل = game:GetService("RunService")
+local الكاميرا = workspace.CurrentCamera
+
+local يطير = false
+local السرعة = 65
+
+local دفع, توجيه
+local اتصال
+
+-- واجهة fly v3
+local واجهة = Instance.new("ScreenGui")
+واجهة.Name = "fly_v3"
+واجهة.Parent = game.CoreGui
+
+local زر = Instance.new("TextButton")
+زر.Parent = واجهة
+زر.Size = UDim2.new(0, 170, 0, 55)
+زر.Position = UDim2.new(0.05, 0, 0.7, 0)
+زر.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+زر.TextColor3 = Color3.fromRGB(255, 255, 255)
+زر.TextScaled = true
+زر.Text = "✈️ fly v3 | تشغيل"
+زر.BorderSizePixel = 0
+زر.Font = Enum.Font.SourceSansBold
+
+-- تشغيل الطيران
+local function تشغيل_الطيران()
+	توجيه = Instance.new("BodyGyro", الجذر)
+	توجيه.P = 90000
+	توجيه.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+	توجيه.CFrame = الجذر.CFrame
+
+	دفع = Instance.new("BodyVelocity", الجذر)
+	دفع.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	دفع.Velocity = Vector3.zero
+
+	الإنسان.PlatformStand = true
+
+	اتصال = تشغيل.RenderStepped:Connect(function()
+		if يطير then
+			توجيه.CFrame = الكاميرا.CFrame
+			دفع.Velocity = الكاميرا.CFrame.LookVector * السرعة
+		end
+	end)
+end
+
+-- إيقاف الطيران
+local function إيقاف_الطيران()
+	if اتصال then اتصال:Disconnect() اتصال = nil end
+	if توجيه then توجيه:Destroy() توجيه = nil end
+	if دفع then دفع:Destroy() دفع = nil end
+	الإنسان.PlatformStand = false
+end
+
+-- زر التحكم
+زر.MouseButton1Click:Connect(function()
+	يطير = not يطير
+	if يطير then
+		زر.Text = "🛑 fly v3 | إيقاف"
+		تشغيل_الطيران()
+	else
+		زر.Text = "✈️ fly v3 | تشغيل"
+		إيقاف_الطيران()
+	end
+end)
